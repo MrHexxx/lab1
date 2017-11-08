@@ -1,93 +1,16 @@
-#include <math.h>
-#include <stdio.h>
-#include <math.h>
-#include <float.h>
-#include <stdlib.h>
+//Mateusz Okulus listopad 2017
+//Projekt PRI laboratoria nr 1
+#include <math.h> //funkcja cos(x)
+#include <stdio.h> //konsola
+#include <float.h> //uzywanie DBL_DIG
 
-double f(double x);
-double integral(double x);
-double defIntegral(double a, double b);
-double integrate(double a, double b, int steps);
-int calcN(double a, double b, double accuracy);
-double r01();
-
-double max = 23;
-
-double integrateMine(double a, double b, double accuracy)
-{
-  int steps = 32;
-  double oldIntegral = integrate(a, b, steps);
-  steps *= 2;
-  double newIntegral = integrate(a, b, steps);
-  while( fabs(newIntegral - oldIntegral) > accuracy )
-  {
-    steps = (int)(2 * steps);
-    oldIntegral = newIntegral;
-    newIntegral = integrate(a, b, steps);
-  }
-  double integral = integrate(a, b, steps);
-  return integral;
-}
-
-double integrateMath(double a, double b, double accuracy)
-{
-  int steps = calcN(a, b, accuracy) * 2;
-  double integral = integrate(a, b, steps);
-  return integral;
-}
-
-int main()
-{
-  srand(3);
-
-  double (*integralPtr)(double, double, double) = &integrateMath;
-
-  // for(int i = 0; i < 1000000; i++)
-  int i = 1;
-  while(1)
-  {
-    double a = r01() * 10 - 5; //<-5,5>
-    double bRange = 5 - a;
-    double b = r01() * bRange + a;
-    if(b == a)
-    {
-      a = -2;
-      b = 2;
-    }
-    double accuracy = r01() / 100.0;
-
-    double calculated = (*integralPtr)(a, b, accuracy);
-    double value = defIntegral(a, b);
-    double error = fabs( calculated - value );
-    if(error <= accuracy)
-    {
-      if(i % 10000 == 0)
-        printf("%d - Correct!\n", i);
-    }
-    else
-    {
-      printf("%d - Error - a=%f b=%f accuracy=%f error=%f value=%f calculated=%f\n", i, a, b, accuracy, error, value, calculated);
-    }
-
-    i++;
-  }
-  printf("FINISHED\n");
-  return 0;
-}
+double f(double x); //funkcja całkowana
+double integrate(double a, double b, int steps); //liczenie całki metodą trapezów z steps podziałów
+double calculateIntegral(double a, double b, double accuracy); //oblicznie całki dopóki wartość nie ustabilizuje się poniżej błędu
 
 double f(double x)
 {
   return -x*x*cos(x);
-}
-
-double integral(double x)
-{
-  return -(x*x - 2)*sin(x) - 2*x*cos(x);
-}
-
-double defIntegral(double a, double b)
-{
-  return integral(b) - integral(a);
 }
 
 double integrate(double a, double b, int steps)
@@ -105,14 +28,36 @@ double integrate(double a, double b, int steps)
   return integral;
 }
 
-int calcN(double a, double b, double accuracy)
+double calculateIntegral(double a, double b, double accuracy)
 {
-  int n = sqrt( max * (pow(b-a, 3) / 12.0) * (1.0 / accuracy) ) + 1;
-  //printf("n = %d\n", n);
-  return n;
+  int steps = 32;
+  double oldIntegral = integrate(a, b, steps);
+  steps *= 2;
+  double newIntegral = integrate(a, b, steps);
+  while( fabs(newIntegral - oldIntegral) > accuracy )
+  {
+    oldIntegral = newIntegral;
+    steps *= 2;
+    newIntegral = integrate(a, b, steps);
+  }
+  double integral = integrate(a, b, steps);
+  return integral;
 }
 
-double r01()
+int main()
 {
-  return (double)rand() / (double)RAND_MAX;
+  double a = 0, b = 0, e = 0;
+
+  while( scanf("%lf %lf %lf", &a, &b, &e) == 3)
+  {
+    if(a < -5 || b < a || b > 5 || e <= 0)
+    {
+      printf("\nNiepoprawne dane");
+      return 1;
+    }
+
+    double calculated = calculateIntegral(a, b, e);
+    printf("%.*lf\n", DBL_DIG-1, calculated);
+  }
+  return 0;
 }

@@ -46,13 +46,14 @@ double calculateIntegral(double a, double b, double accuracy)
 
 int main()
 {
+  printf("Format a b delta\n");
   double a = 0, b = 0, e = 0;
 
   while( scanf("%lf %lf %lf", &a, &b, &e) == 3)
   {
     if(a < -5 || b < a || b > 5 || e <= 0)
     {
-      printf("\nNiepoprawne dane");
+      printf("\nNiepoprawne dane\n");
       return 1;
     }
 
